@@ -1,13 +1,16 @@
 // Shared steps for the end-to-end tests.
-import { expect, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 /** Fails with the rule ids and node counts of every serious or critical
- * axe violation on the page as it is now. */
-export async function expectNoSeriousViolations(page: Page, what = "") {
+ * axe violation on the page as it is now. `scan`, when given, names the
+ * language and theme scanned; with `what` as the state, it is recorded as
+ * an annotation that scripts/badges.mjs reads to state the axe matrix. */
+export async function expectNoSeriousViolations(page: Page, what = "", scan?: { lang: string; theme: string }) {
   const results = await new AxeBuilder({ page }).analyze();
   const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(serious.map((v) => `${v.id}: ${v.nodes.length} (${v.nodes.map((n) => n.target.join(" ")).slice(0, 3).join(", ")})`), what).toEqual([]);
+  if (scan) test.info().annotations.push({ type: "axe-scan", description: JSON.stringify({ ...scan, state: what }) });
 }
 
 /** Waits until the engines are settled and the list is drawn. */

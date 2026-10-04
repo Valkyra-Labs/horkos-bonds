@@ -4,6 +4,11 @@
 import { expect, test, type Page } from "@playwright/test";
 import { ISSUES, ready } from "./helpers";
 
+// Timing both engines runs 8,800 calls (two engines, two functions, 20
+// warm-up and 200 kept batches of 10); a shared CI runner takes well over
+// the default five seconds, so the rows get a minute to appear.
+const TIMING_DONE = { timeout: 60_000 };
+
 /** Every figure the screen shows for the open issue and plan, as text. */
 async function figures(page: Page): Promise<string[]> {
   const parts = [
@@ -64,7 +69,7 @@ test("the diagnostics switch engines without changing a figure, and time both", 
 
   await sheet.getByRole("button", { name: "Time both engines" }).click();
   const timings = sheet.getByRole("table", { name: /Time per call on this issue and plan/ });
-  await expect(timings.locator("tbody tr")).toHaveCount(4);
+  await expect(timings.locator("tbody tr")).toHaveCount(4, TIMING_DONE);
   await expect(timings).toContainText("derive_bond");
   await expect(timings).toContainText("calculate");
   await expect(timings).toContainText("ms");
