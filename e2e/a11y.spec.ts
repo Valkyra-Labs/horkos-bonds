@@ -4,6 +4,11 @@
 import { expect, test, type Page } from "@playwright/test";
 import { ISSUES, expectNoHorizontalScroll, expectNoSeriousViolations, ready } from "./helpers";
 
+// Timing both engines runs 8,800 calls (two engines, two functions, 20
+// warm-up and 200 kept batches of 10); a shared CI runner takes well over
+// the default five seconds, so the rows get a minute to appear.
+const TIMING_DONE = { timeout: 60_000 };
+
 const LANGS = ["en", "ru", "ar"] as const;
 const THEMES = ["light", "dark"] as const;
 
@@ -49,7 +54,7 @@ for (const lang of LANGS) {
       await page.locator(".foot__actions button").first().click();
       await expect(page.getByRole("dialog")).toBeVisible();
       await page.getByRole("dialog").locator(".diagnostics > button").click();
-      await expect(page.getByRole("dialog").locator("tbody tr")).toHaveCount(4);
+      await expect(page.getByRole("dialog").locator("tbody tr")).toHaveCount(4, TIMING_DONE);
       await expectNoSeriousViolations(page, "diagnostics", { lang, theme });
     });
 
