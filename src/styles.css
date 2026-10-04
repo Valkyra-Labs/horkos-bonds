@@ -1,0 +1,91 @@
+/* Every weight the interface uses, in each script, so the browser never
+   synthesises bold: regular, Stoa's medium (badges, panel titles) and
+   semibold (headings and strong text). Plex Sans and Mono carry Latin and
+   Cyrillic; Noto Sans Arabic is in Stoa's numeric stack for tabular
+   Arabic-Indic digits. */
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-sans-arabic/400.css";
+@import "@fontsource/ibm-plex-sans-arabic/500.css";
+@import "@fontsource/ibm-plex-sans-arabic/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/noto-sans-arabic/400.css";
+@import "@valkyra-labs/stoa-react/styles.css";
+
+:root {
+  color-scheme: light dark;
+  font-family: var(--stoa-font-family-sans);
+  font-size: var(--stoa-font-size-md);
+  background: var(--stoa-color-bg);
+  color: var(--stoa-color-text);
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+body { margin: 0; }
+strong { font-weight: var(--stoa-font-weight-semibold); }
+
+.muted { margin: 0; color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-sm); }
+.field-note { margin: 0; color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-xs); }
+.ticker { font-family: var(--stoa-font-family-mono); }
+
+.app { display: grid; gap: var(--stoa-space-4); }
+
+/* Side by side from 64rem (the same breakpoint as ui/useMediaQuery). */
+.workspace { display: grid; gap: var(--stoa-space-4); align-items: start; }
+@media (min-width: 64rem) {
+  .workspace { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  /* The list stays in view while the issue scrolls; its own area scrolls. */
+  .pane-list { position: sticky; inset-block-start: 0; }
+  .pane-list__scroll { max-block-size: calc(var(--stoa-space-12) * 13); }
+}
+.detail { display: grid; gap: var(--stoa-space-4); min-inline-size: 0; }
+.detail--empty { padding-block: var(--stoa-space-8); }
+.narrow { display: grid; gap: var(--stoa-space-3); justify-items: start; }
+.narrow > .detail { justify-self: stretch; }
+
+.issue-list { display: grid; gap: var(--stoa-space-3); }
+.chip-row { display: grid; gap: var(--stoa-space-1); }
+.chip-row__label, .field-label { font-size: var(--stoa-font-size-xs); color: var(--stoa-color-text-muted); }
+.issue-list__bar { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-3); align-items: center; }
+.issue-list__bar .muted { margin-inline-end: auto; }
+
+.issue-link.stoa-button {
+  display: grid; justify-items: start; gap: var(--stoa-space-0-5);
+  inline-size: 100%; text-align: start; white-space: normal; block-size: auto;
+  padding-block: var(--stoa-space-1);
+}
+.issue-link__name { font-weight: var(--stoa-font-weight-medium); }
+.issue-link__meta { color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-xs); font-weight: var(--stoa-font-weight-regular); }
+.issue-link[aria-current="true"] { background: var(--stoa-color-surface-hover); border-inline-start: var(--stoa-space-0-5) solid var(--stoa-color-accent); }
+.cell-stack { display: grid; justify-items: end; }
+.cell-note { color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-2xs); font-family: var(--stoa-font-family-sans); }
+
+.issue-card__id { margin: 0 0 var(--stoa-space-2); color: var(--stoa-color-text-muted); }
+.tags { display: flex; flex-wrap: wrap; gap: var(--stoa-space-1); }
+.block { display: grid; gap: var(--stoa-space-3); margin-block-start: var(--stoa-space-4); min-inline-size: 0; }
+.block__title { margin: 0; font-size: var(--stoa-font-size-lg); font-weight: var(--stoa-font-weight-semibold); }
+.block__subtitle { margin: 0; font-size: var(--stoa-font-size-md); font-weight: var(--stoa-font-weight-semibold); }
+.metrics {
+  display: grid; gap: var(--stoa-space-3) var(--stoa-space-4);
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--stoa-space-12) * 4), 1fr));
+}
+
+.calc-inputs {
+  display: grid; gap: var(--stoa-space-4);
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--stoa-space-12) * 6), 1fr));
+  align-items: start;
+}
+.calc-horizon, .calc-tax { display: grid; gap: var(--stoa-space-2); }
+
+.foot { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-4); align-items: center; justify-content: space-between; }
+.foot p { margin: 0; }
+.foot__actions { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2); }
+
+.glossary__list { display: grid; gap: var(--stoa-space-2); margin: 0; }
+.glossary__item dt { font-weight: var(--stoa-font-weight-semibold); }
+.glossary__item dd { margin: 0; color: var(--stoa-color-text-muted); }
+
+.diagnostics { display: grid; gap: var(--stoa-space-3); justify-items: start; }
+.diagnostics > * { max-inline-size: 100%; }
+.diagnostics code { font-family: var(--stoa-font-family-mono); }
