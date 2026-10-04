@@ -1,5 +1,18 @@
 # Horkos Bonds
 
+[![CI](https://github.com/Valkyra-Labs/horkos-bonds/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Valkyra-Labs/horkos-bonds/actions/workflows/ci.yml)
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg)](#license)
+[![Unit tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Valkyra-Labs/horkos-bonds/badges/unit-tests.json)](#badges)
+[![e2e](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Valkyra-Labs/horkos-bonds/badges/e2e.json)](#badges)
+[![axe](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Valkyra-Labs/horkos-bonds/badges/axe.json)](#badges)
+[![Lighthouse accessibility](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Valkyra-Labs/horkos-bonds/badges/lighthouse-accessibility.json)](#badges)
+[![Lighthouse best practices](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Valkyra-Labs/horkos-bonds/badges/lighthouse-best-practices.json)](#badges)
+[![Lighthouse SEO](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Valkyra-Labs/horkos-bonds/badges/lighthouse-seo.json)](#badges)
+[![Bundle gzip](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Valkyra-Labs/horkos-bonds/badges/bundle-size.json)](#badges)
+
+The test, axe, Lighthouse and size badges are measured and published by
+CI from `main`; what each one counts is under [Badges](#badges).
+
 A bond-investing screen for the Russian bond market, in the browser: a
 list of sixty fictional issues to search and filter, a card for each
 issue with its figures and payment schedule, and a calculator for holding
@@ -104,6 +117,37 @@ pnpm test         # unit tests (vitest)
 pnpm e2e          # builds, serves on port 4176 and runs Playwright
 node scripts/measure.mjs   # after pnpm build: the measurement tables
 ```
+
+`pnpm e2e` builds the app every time and tests the build through
+`vite preview` on 4176; `E2E_PORT` moves it to another port, as CI does:
+
+```bash
+E2E_PORT=4181 pnpm e2e
+```
+
+### Badges
+
+CI checks out this repository, stoa-system and horkos-yield side by side,
+builds the engine (its WebAssembly package with wasm-pack and its twin)
+and Stoa, then builds and tests the app. Each green run on `main`
+publishes the dynamic badges to the `badges` branch, as JSON that
+img.shields.io reads; `scripts/badges.mjs` builds them from that run's
+own output and stops, publishing nothing, when a value cannot be read.
+
+- Unit tests: Vitest tests passed (`pnpm test`).
+- e2e: Playwright tests passed in Chromium against `vite preview` of the
+  build (`e2e/`).
+- axe: axe-core 4.13.0 in the e2e, on each of the ten states listed
+  under [Accessibility](#accessibility) (eight at 1440 px, two at 375
+  px) in English, Russian and Arabic, light and dark; a serious or
+  critical violation fails the run.
+- Lighthouse: Lighthouse 12 accessibility, best practices and SEO scores
+  for the home page served by `vite preview`, the lower of the desktop
+  and mobile runs. Performance is not shown: on a shared CI runner it
+  measures the runner.
+- Bundle gzip: every JavaScript and CSS file in `dist/`, gzip level 9,
+  summed. The engine's WebAssembly, the fonts and `index.html` are not
+  included.
 
 ## Measurements
 
