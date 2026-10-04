@@ -17,10 +17,12 @@ import {
   Table,
   type TableColumn,
 } from "@valkyra-labs/stoa-react";
+import { useRef } from "react";
 import { TAX_RATE_PCT, dayToMs } from "../data/market";
 import type { Breakdown, Calculation, Derived, ErrorCode, Result, TaxRegime } from "../engine/types";
 import type { Strings } from "../i18n";
 import type { Formats } from "../lib/format";
+import { useLocalDigits } from "./localDigits";
 import { COMMISSION_PCT, WORST_CASE_COUPON_PCT } from "horkos-yield-twin";
 
 export type PlanInput = { amount: number; horizonDay: number; reinvest: boolean; taxRegime: TaxRegime; rateShiftPct: number };
@@ -43,6 +45,8 @@ export type CalculatorProps = {
 type Line = { id: string; label: string; value: number; total?: boolean };
 
 export function Calculator({ t, f, derived: d, plan, onPlan, result }: CalculatorProps) {
+  const amountBox = useRef<HTMLDivElement>(null);
+  useLocalDigits(amountBox, f.locale);
   const set = (patch: Partial<PlanInput>) => onPlan({ ...plan, ...patch });
   const pp = (v: number) => t.shiftValue(f.decimalSigned(v, 1));
   const horizonText = (day: number) =>
@@ -57,7 +61,9 @@ export function Calculator({ t, f, derived: d, plan, onPlan, result }: Calculato
   return (
     <Panel title={t.calculator} className="calculator">
       <div className="calc-inputs">
-        <NumberField label={t.amount} value={plan.amount} onChange={(amount) => set({ amount })} step={10_000} minValue={0} />
+        <div ref={amountBox}>
+          <NumberField label={t.amount} value={plan.amount} onChange={(amount) => set({ amount })} minValue={0} />
+        </div>
         <div className="calc-horizon">
           <Slider
             label={t.horizon}
