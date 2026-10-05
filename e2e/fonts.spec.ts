@@ -22,17 +22,21 @@ test("lang and dir come from the link or the last visit before the app's script 
   await expect(html).toHaveAttribute("lang", "ru");
 });
 
-test("the Arabic face is preloaded in Arabic only, and used", async ({ page }) => {
+test("the Arabic faces are preloaded in Arabic only, and used", async ({ page }) => {
   const preloads = () => page.locator('link[rel="preload"][as="font"]').evaluateAll((links) => links.map((l) => (l as HTMLLinkElement).href));
   await page.goto("/?lang=ar");
   await ready(page);
+  // The words' face, and the digits' face of the numeric stack.
   const ar = await preloads();
-  expect(ar).toHaveLength(1);
+  expect(ar).toHaveLength(2);
   expect(ar[0]).toMatch(/ibm-plex-sans-arabic-arabic-400-normal.*\.woff2$/);
-  // The preloaded file is the one the page's font face uses, so it is not
+  expect(ar[1]).toMatch(/noto-sans-arabic-arabic-400-normal.*\.woff2$/);
+  // Each preloaded file is the one the page's font face uses, so none is
   // fetched twice.
-  const fetched = await page.evaluate(() => performance.getEntriesByType("resource").filter((e) => /ibm-plex-sans-arabic-arabic-400-normal/.test(e.name)).length);
-  expect(fetched).toBe(1);
+  for (const name of ["ibm-plex-sans-arabic-arabic-400-normal", "noto-sans-arabic-arabic-400-normal"]) {
+    const fetched = await page.evaluate((n) => performance.getEntriesByType("resource").filter((e) => e.name.includes(n)).length, name);
+    expect(fetched, name).toBe(1);
+  }
   await page.goto("/?lang=en");
   await ready(page);
   expect(await preloads()).toEqual([]);
