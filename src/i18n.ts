@@ -89,7 +89,8 @@ const en = {
   tagFloater: (spread: string) => `Floater: key rate + ${spread}`,
   tagAmortising: "Amortising",
   tagOffer: (date: string) => `Offer on ${date}`,
-  ratingLabel: (rating: string) => `Rating ${rating}`,
+  /** Followed by the rating, isolated left to right. */
+  rating: "Rating",
 
   chooseTitle: "Choose an issue",
   chooseBody: "Its payment schedule, figures and a calculator appear here.",
@@ -356,7 +357,7 @@ const ru: Strings = {
   tagFloater: (spread) => `Флоатер: ключевая ставка + ${spread}`,
   tagAmortising: "С амортизацией",
   tagOffer: (date) => `Оферта ${date}`,
-  ratingLabel: (rating) => `Рейтинг ${rating}`,
+  rating: "Рейтинг",
 
   chooseTitle: "Выберите выпуск",
   chooseBody: "Здесь появятся график выплат, показатели и калькулятор.",
@@ -621,7 +622,7 @@ const ar: Strings = {
   tagFloater: (spread) => `عائد متغيّر: سعر الفائدة الرئيسي + ${spread}`,
   tagAmortising: "بإطفاء جزئي",
   tagOffer: (date) => `عرض إعادة شراء في ${date}`,
-  ratingLabel: (rating) => `التصنيف ${rating}`,
+  rating: "التصنيف",
 
   chooseTitle: "اختر إصدارًا",
   chooseBody: "يظهر هنا جدول مدفوعاته وأرقامه وحاسبة له.",

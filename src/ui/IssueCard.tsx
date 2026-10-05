@@ -1,7 +1,7 @@
 // One issue: what it is, its derived figures, its payment schedule as an
 // event strip and a table, and for a fixed coupon how its price depends on
 // the yield.
-import { EventStrip, LineChart, Metric, Panel, StatBar, Table, Tag, type StripEvent, type TableColumn, type TagTone } from "@valkyra-labs/stoa-react";
+import { EventStrip, LineChart, Ltr, Metric, Panel, StatBar, Table, Tag, type StripEvent, type TableColumn, type TagTone } from "@valkyra-labs/stoa-react";
 import { ratingIndex, type Bond } from "../data/issues";
 import { dayToMs } from "../data/market";
 import type { Derived, Engine } from "../engine/types";
@@ -81,7 +81,10 @@ export function IssueCard({ t, f, bond, derived: d, engine, name }: IssueCardPro
         <bdi className="ticker">{bond.id}</bdi>
       </p>
       <div className="tags">
-        <Tag tone={ratingTone(bond)}>{t.ratingLabel(bond.rating)}</Tag>
+        {/* The rating reads left to right in every language: "BBB-", not "-BBB" in Arabic. */}
+        <Tag tone={ratingTone(bond)}>
+          {t.rating} <Ltr>{bond.rating}</Ltr>
+        </Tag>
         <Tag>{bond.issuer.kind === "ofz" ? t.tagOfz : t.tagCorporate}</Tag>
         <Tag tone={floater ? "info" : "neutral"}>{floater ? t.tagFloater(f.percent(issue.spreadPct / 100)) : t.tagFixed}</Tag>
         {issue.amortization.length > 0 && <Tag tone="info">{t.tagAmortising}</Tag>}
