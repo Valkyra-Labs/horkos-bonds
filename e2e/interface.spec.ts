@@ -37,3 +37,15 @@ test("in Arabic the rating tag keeps its minus after the letters", async ({ page
   expect(order).not.toBeNull();
   expect(order!.minus).toBeGreaterThan(order!.b);
 });
+
+for (const lang of ["en", "ru", "ar"] as const) {
+  test(`at 375 px every table on an issue fits its box (${lang})`, async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    for (const id of [ISSUES.offer, ISSUES.floater]) {
+      await page.goto(`/?lang=${lang}&issue=${id}`);
+      await ready(page);
+      await expect(page.getByTestId("result")).toBeVisible();
+      expect(await overflowing(page.locator(".detail")), id).toEqual([]);
+    }
+  });
+}

@@ -16,3 +16,6 @@ export function useMediaQuery(query: string): boolean {
 /** The width from which the list and the issue sit side by side; the
  * stylesheet uses the same breakpoint. */
 export const WIDE = "(min-width: 64rem)";
+
+/** A phone: the payments table drops its total column. */
+export const NARROW = "(max-width: 40rem)";

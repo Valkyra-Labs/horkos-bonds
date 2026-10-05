@@ -56,6 +56,13 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .issue-link__meta { color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-xs); font-weight: var(--stoa-font-weight-regular); }
 .issue-link[aria-current="true"] { background: var(--stoa-color-surface-hover); border-inline-start: var(--stoa-space-0-5) solid var(--stoa-color-accent); }
 .cell-stack { display: grid; justify-items: end; }
+
+/* Stoa keeps a table's headers and row headers on one line. Here the row
+   headers are sentences ("Broker's commission, 0.05% of each trade") and
+   dates, and on a phone that pushed the amounts out of the box: they wrap
+   instead, and the amounts stay on one line. */
+.detail .stoa-table th { white-space: normal; }
+.event-cell { display: grid; gap: var(--stoa-space-1); justify-items: start; }
 .cell-note { color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-2xs); font-family: var(--stoa-font-family-sans); }
 
 .issue-card__id { margin: 0 0 var(--stoa-space-2); color: var(--stoa-color-text-muted); }
