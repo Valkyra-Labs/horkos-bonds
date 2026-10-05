@@ -87,4 +87,4 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 
 .diagnostics { display: grid; gap: var(--stoa-space-3); justify-items: start; }
 .diagnostics > * { max-inline-size: 100%; }
-.diagnostics code { font-family: var(--stoa-font-family-mono); }
+.timing-call { display: grid; }

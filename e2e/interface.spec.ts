@@ -109,3 +109,21 @@ test("on a phone the search shortcut goes back to the list and into the search",
   await expect(page.getByLabel("Search by issuer or ticker")).toBeFocused();
   expect(new URL(page.url()).searchParams.get("issue")).toBeNull();
 });
+
+for (const [lang, width] of [
+  ["en", 1280],
+  ["ru", 1280],
+  ["ar", 1280],
+  ["ru", 375],
+] as const) {
+  test(`the diagnostics timing table fits the sheet (${lang}, ${width} px)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`/?lang=${lang}&issue=${ISSUES.offer}`);
+    await ready(page);
+    await page.locator(".foot__actions button").first().click();
+    const sheet = page.getByRole("dialog");
+    await sheet.locator(".diagnostics > button").click();
+    await expect(sheet.locator("tbody tr")).toHaveCount(4, { timeout: 60_000 });
+    expect(await overflowing(sheet)).toEqual([]);
+  });
+}

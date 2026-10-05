@@ -235,8 +235,7 @@ const en = {
   ms: (value: string) => `${value} ms`,
   timingCaption: (samples: string, calls: string, percentile: string) =>
     `Time per call on this issue and plan: median and ${percentile}th percentile over ${samples} samples, each the mean of ${calls} calls`,
-  colEngine: "Engine",
-  colFunction: "Function",
+  colCall: "Engine and function",
   colMedian: "Median",
   colP95: (percentile: string) => `${percentile}th percentile`,
   timeBoth: "Time both engines",
@@ -500,8 +499,7 @@ const ru: Strings = {
   ms: (value) => `${value} мс`,
   timingCaption: (samples, calls, percentile) =>
     `Время одного вызова на этом выпуске и плане: медиана и ${percentile}-й процентиль по ${samples} замерам, каждый замер равен среднему по ${calls} вызовам`,
-  colEngine: "Движок",
-  colFunction: "Функция",
+  colCall: "Движок и функция",
   colMedian: "Медиана",
   colP95: (percentile) => `${percentile}-й процентиль`,
   timeBoth: "Замерить оба движка",
@@ -763,8 +761,7 @@ const ar: Strings = {
   ms: (value) => `${value} ملّي ثانية`,
   timingCaption: (samples, calls, percentile) =>
     `زمن الاستدعاء الواحد على هذا الإصدار وهذه الخطة: الوسيط والمئين ${percentile} على ${samples} قياسًا، كل منها متوسط ${calls} استدعاءات`,
-  colEngine: "المحرّك",
-  colFunction: "الدالة",
+  colCall: "المحرّك والدالة",
   colMedian: "الوسيط",
   colP95: (percentile) => `المئين ${percentile}`,
   timeBoth: "قِس المحرّكين",
