@@ -101,8 +101,8 @@ What the tests cover, and nothing wider:
   empty list, a calculation error, the diagnostics sheet with timings,
   the loading state and the WebAssembly fallback, at 1440 px; and the
   list and an issue at 375 px.
-- Keyboard paths: `/` to the search, Tab to an issue and Enter to open
-  it, the horizon and key-rate sliders by arrow and page keys, the
+- Keyboard paths: `/` to the search, Tab to the issue list (one tab
+  stop), the arrow keys through it and Enter to open an issue, the horizon and key-rate sliders by arrow and page keys, the
   reinvestment switch by Space, `?` for the shortcuts dialog, Escape to
   close it; on a phone, Back returns focus to the issue's row. The
   scroll keys scroll the page with nothing focused.

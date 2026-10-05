@@ -1,7 +1,8 @@
 // The list of issues: search, filter chips in groups with counts, a sort,
-// and a table whose first column opens an issue.
+// and the issues as a record list: one tab stop, the arrow keys move
+// through it, and picking an issue opens it.
 import type { RefObject } from "react";
-import { Button, EmptyState, FilterChipGroup, Select, Table, TextField, type TableColumn } from "@valkyra-labs/stoa-react";
+import { Button, EmptyState, FilterChipGroup, Ltr, RecordList, Select, TextField, type RecordListItem } from "@valkyra-labs/stoa-react";
 import type { Bond } from "../data/issues";
 import type { Strings } from "../i18n";
 import { GROUPS, chipCounts, type ChipId, type GroupId, type Item, type Query, type SortKey } from "../lib/filters";
@@ -42,35 +43,30 @@ export type IssueListProps = {
 
 export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, selectedId, onOpen, nameOf, searchRef }: IssueListProps) {
   const counts = chipCounts(all, query, nameOf);
-  const columns: TableColumn<Item>[] = [
-    {
-      id: "issue",
-      header: t.colIssue,
-      cell: ({ bond }) => {
-        const selected = bond.id === selectedId;
-        return (
-          <Button variant="ghost" className="issue-link" data-issue={bond.id} aria-current={selected ? "true" : undefined} onPress={() => onOpen(bond.id)}>
-            <span className="issue-link__name">{nameOf(bond)}</span>
-            <span className="issue-link__meta">
-              <bdi className="ticker">{bond.id}</bdi> · <bdi className="ticker">{bond.rating}</bdi> · {bond.issue.couponType === "floater" ? t.chipFloater : t.chipFixed}
-            </span>
-          </Button>
-        );
-      },
-    },
-    {
-      id: "yield",
-      header: t.colYield,
-      numeric: true,
-      cell: ({ derived }) => (
-        <span className="cell-stack">
-          <span>{f.percent(derived.yieldEvent)}</span>
-          <span className="cell-note">{derived.event === "offer" ? t.toOffer : t.toMaturity}</span>
+  // The ticker names the record (typing it jumps there); the issuer, the
+  // rating, the coupon and the maturity describe it; the yield is its value.
+  const records: RecordListItem[] = visible.map(({ bond, derived }) => ({
+    id: bond.id,
+    label: bond.id,
+    description: (
+      <span className="issue-desc">
+        <span>{nameOf(bond)}</span>
+        <span className="issue-desc__facts">
+          <span>
+            {t.rating} <Ltr>{bond.rating}</Ltr>
+          </span>
+          <span>{bond.issue.couponType === "floater" ? t.chipFloater : t.chipFixed}</span>
+          <span>{t.matures(f.date(derived.maturityDay))}</span>
         </span>
-      ),
-    },
-    { id: "maturity", header: t.colMaturity, numeric: true, cell: ({ derived }) => f.date(derived.maturityDay) },
-  ];
+      </span>
+    ),
+    meta: (
+      <span className="cell-stack">
+        <span>{f.percent(derived.yieldEvent)}</span>
+        <span className="cell-note">{derived.event === "offer" ? t.toOffer : t.toMaturity}</span>
+      </span>
+    ),
+  }));
   const active = query.chips.length > 0 || query.search !== "";
 
   return (
@@ -116,17 +112,7 @@ export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, se
           action={<Button onPress={() => onQuery({ chips: [], search: "" })}>{t.clearFilters}</Button>}
         />
       ) : (
-        <Table<Item>
-          caption={t.listCaption}
-          hideCaption
-          columns={columns}
-          rows={[...visible]}
-          rowKey={(i) => i.bond.id}
-          rowHeader="issue"
-          emptyText={t.noMatchesTitle}
-          stickyHeader
-          scrollable={false}
-        />
+        <RecordList label={t.listCaption} items={records} value={selectedId} onChange={onOpen} />
       )}
     </div>
   );

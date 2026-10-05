@@ -49,3 +49,22 @@ for (const lang of ["en", "ru", "ar"] as const) {
     }
   });
 }
+
+test("the issue list is one tab stop, moved through with the arrow keys", async ({ page }) => {
+  await page.goto("/");
+  await ready(page);
+  const list = page.getByRole("listbox", { name: "Bond issues" });
+  await expect(list.getByRole("option")).toHaveCount(60);
+  // From the sort, one Tab reaches the list and the next leaves it.
+  await page.getByRole("button", { name: /Sort by/ }).focus();
+  await page.keyboard.press("Tab");
+  const first = list.getByRole("option").first();
+  await expect(first).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(list.getByRole("option").nth(1)).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(list.getByRole("option").nth(1)).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator(".issue-card")).toBeVisible();
+  await page.keyboard.press("Tab");
+  await expect(list.locator(":focus")).toHaveCount(0);
+});

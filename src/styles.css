@@ -47,14 +47,9 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .issue-list__bar { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-3); align-items: center; }
 .issue-list__bar .muted { margin-inline-end: auto; }
 
-.issue-link.stoa-button {
-  display: grid; justify-items: start; gap: var(--stoa-space-0-5);
-  inline-size: 100%; text-align: start; white-space: normal; block-size: auto;
-  padding-block: var(--stoa-space-1);
-}
-.issue-link__name { font-weight: var(--stoa-font-weight-medium); }
-.issue-link__meta { color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-xs); font-weight: var(--stoa-font-weight-regular); }
-.issue-link[aria-current="true"] { background: var(--stoa-color-surface-hover); border-inline-start: var(--stoa-space-0-5) solid var(--stoa-color-accent); }
+.issue-desc { display: grid; }
+.issue-desc__facts { display: flex; flex-wrap: wrap; column-gap: var(--stoa-space-3); }
+.issue-desc__facts > span { white-space: nowrap; }
 .cell-stack { display: grid; justify-items: end; }
 
 /* Stoa keeps a table's headers and row headers on one line. Here the row

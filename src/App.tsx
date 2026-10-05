@@ -46,6 +46,15 @@ function writeIssue(id: string | null) {
   history.replaceState(history.state, "", url);
 }
 
+/** Focuses an issue's row in the list. The record list draws its rows a
+ * frame or two after it mounts, so this waits for the row, for a few
+ * frames at most. */
+function focusRecord(id: string, frames = 10) {
+  const row = document.querySelector<HTMLElement>(`.pane-list [role="option"][data-key="${CSS.escape(id)}"]`);
+  if (row) row.focus();
+  else if (frames > 0) requestAnimationFrame(() => focusRecord(id, frames - 1));
+}
+
 const TERM_KEYS = ["keyRate", "ofz", "accrued", "ytm", "simpleYield", "offer", "amortisation", "duration", "ldv", "iis", "rating"] as const;
 
 /** The screen. Rendered inside an I18nProvider set to the language's
@@ -118,8 +127,11 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
   // Back button when it opens, and back to the issue's row when it closes.
   useEffect(() => {
     if (wide) return;
-    if (selectedId !== null) back.current?.querySelector("button")?.focus();
-    else if (returnTo.current) document.querySelector<HTMLElement>(`[data-issue="${returnTo.current}"]`)?.focus();
+    // A frame later: the list picks a row on pointer down, and the
+    // browser's own focus on that press would otherwise land after this
+    // one, on the page, since the row is gone.
+    if (selectedId !== null) requestAnimationFrame(() => back.current?.querySelector("button")?.focus());
+    else if (returnTo.current) focusRecord(returnTo.current);
   }, [selectedId, wide]);
 
   const help = useShortcuts([

@@ -7,7 +7,7 @@ import { ISSUES, ready } from "./helpers";
 test("the list shows sixty issues, filters by chips with counts, and searches", async ({ page }) => {
   await page.goto("/");
   await ready(page);
-  const rows = page.locator(".pane-list tbody tr");
+  const rows = page.locator(".pane-list [role=option]");
   await expect(rows).toHaveCount(60);
   await expect(page.getByText("60 of 60 issues")).toBeVisible();
 
@@ -34,9 +34,9 @@ test("a search with no match shows an empty state that clears the filters", asyn
   await ready(page);
   await page.getByLabel("Search by issuer or ticker").fill("no such issuer");
   await expect(page.getByText("No issues match")).toBeVisible();
-  await expect(page.locator(".pane-list table")).toHaveCount(0);
+  await expect(page.locator(".pane-list [role=listbox]")).toHaveCount(0);
   await page.locator(".stoa-empty-state").getByRole("button", { name: "Clear filters" }).click();
-  await expect(page.locator(".pane-list tbody tr")).toHaveCount(60);
+  await expect(page.locator(".pane-list [role=option]")).toHaveCount(60);
   await expect(page.getByLabel("Search by issuer or ticker")).toHaveValue("");
 });
 
@@ -45,7 +45,7 @@ test("sorting by maturity puts the soonest first", async ({ page }) => {
   await ready(page);
   await page.getByRole("button", { name: /Sort by/ }).click();
   await page.getByRole("option", { name: "Maturity, soonest first" }).click();
-  const first = page.locator(".pane-list tbody tr").first();
+  const first = page.locator(".pane-list [role=option]").first();
   await expect(first).toContainText("IRTT-01");
   await expect(first).toContainText("Jan 3, 2027");
 });
@@ -54,7 +54,7 @@ test("an issue shows its figures, schedule, payments and price curve", async ({ 
   await page.goto("/");
   await ready(page);
   await expect(page.getByText("Choose an issue")).toBeVisible();
-  await page.locator(`[data-issue="${ISSUES.offer}"]`).click();
+  await page.getByRole("option", { name: ISSUES.offer }).click();
   expect(new URL(page.url()).searchParams.get("issue")).toBe(ISSUES.offer);
   const card = page.locator(".issue-card");
   await expect(card.getByRole("heading", { level: 2 })).toHaveText("Oka Development");
@@ -69,7 +69,7 @@ test("an issue shows its figures, schedule, payments and price curve", async ({ 
   await expect(page.getByRole("table", { name: "Payments per bond" }).locator("tbody tr")).toHaveCount(10);
   await expect(page.getByRole("figure", { name: "Dirty price against yield to maturity" })).toBeVisible();
   // The selected row says so.
-  await expect(page.locator(`[data-issue="${ISSUES.offer}"]`)).toHaveAttribute("aria-current", "true");
+  await expect(page.getByRole("option", { name: ISSUES.offer })).toHaveAttribute("aria-selected", "true");
 });
 
 test("the calculator breaks the total into signed lines and compares the offer", async ({ page }) => {
@@ -140,8 +140,9 @@ test("keyboard: search, open an issue and change the plan", async ({ page }) => 
   await page.keyboard.press("/");
   await expect(page.getByLabel("Search by issuer or ticker")).toBeFocused();
   await page.keyboard.type(ISSUES.amortising);
-  // Tab leaves the field, then each chip group and the sort are one stop.
-  const link = page.locator(`[data-issue="${ISSUES.amortising}"]`);
+  // Tab leaves the field, then each chip group, the sort and the list are
+  // one stop each.
+  const link = page.getByRole("option", { name: ISSUES.amortising });
   for (let i = 0; i < 12 && !(await link.evaluate((el) => el === document.activeElement)); i++) await page.keyboard.press("Tab");
   await expect(link).toBeFocused();
   await page.keyboard.press("Enter");
@@ -182,14 +183,14 @@ test("on a phone the issue replaces the list, and Back returns to its row", asyn
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/");
   await ready(page);
-  const link = page.locator(`[data-issue="${ISSUES.ofz}"]`);
+  const link = page.getByRole("option", { name: ISSUES.ofz });
   await link.click();
   const back = page.getByRole("button", { name: "Back to the list" });
   await expect(back).toBeFocused();
   await expect(page.locator(".pane-list")).toHaveCount(0);
   await expect(page.getByRole("region", { name: "Calculator" })).toBeVisible();
   await back.press("Enter");
-  await expect(page.locator(`[data-issue="${ISSUES.ofz}"]`)).toBeFocused();
+  await expect(page.getByRole("option", { name: ISSUES.ofz })).toBeFocused();
 });
 
 test("while the engine loads the list says so", async ({ page }) => {
@@ -205,7 +206,7 @@ test("while the engine loads the list says so", async ({ page }) => {
   await expect(page.locator(".workspace")).toHaveAttribute("aria-busy", "true");
   release();
   await ready(page);
-  await expect(page.locator(".pane-list tbody tr")).toHaveCount(60);
+  await expect(page.locator(".pane-list [role=option]")).toHaveCount(60);
 });
 
 test("without WebAssembly the TypeScript engine takes over, and WebAssembly can be retried", async ({ page }) => {
