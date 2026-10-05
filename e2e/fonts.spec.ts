@@ -37,3 +37,20 @@ test("the Arabic face is preloaded in Arabic only, and used", async ({ page }) =
   await ready(page);
   expect(await preloads()).toEqual([]);
 });
+
+test("in Arabic the filter chips keep their height when the numeric face arrives", async ({ page }) => {
+  let release = () => {};
+  const held = new Promise<void>((resolve) => (release = resolve));
+  await page.route(/noto-sans-arabic.*\.woff2$/, async (route) => {
+    await held;
+    await route.continue();
+  });
+  await page.goto("/?lang=ar", { waitUntil: "commit" });
+  await ready(page);
+  const chip = page.locator(".stoa-filter-chip").first();
+  const before = (await chip.boundingBox())!.height;
+  release();
+  await page.waitForFunction(() => [...document.fonts].some((f) => f.family.includes("Noto Sans Arabic") && f.status === "loaded"));
+  await page.waitForTimeout(100);
+  expect((await chip.boundingBox())!.height).toBe(before);
+});

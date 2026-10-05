@@ -46,6 +46,13 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .narrow { display: grid; gap: var(--stoa-space-3); justify-items: start; }
 .narrow > .detail { justify-self: stretch; }
 
+/* Workaround for Stoa: a filter chip's count is in the numeric face, whose
+   first Arabic face is Noto Sans Arabic, with taller line metrics than the
+   fallback drawn before it arrives. In Arabic the chips grew from 24 to 31
+   px when it did, and moved the list. The count's own line box no longer
+   sets the chip's height. */
+.stoa-filter-chip__count { line-height: 1; }
+
 .issue-list { display: grid; gap: var(--stoa-space-3); }
 .issue-list__bar { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-3); align-items: center; }
 .issue-list__bar .muted { margin-inline-end: auto; }
