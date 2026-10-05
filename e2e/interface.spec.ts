@@ -68,3 +68,44 @@ test("the issue list is one tab stop, moved through with the arrow keys", async 
   await page.keyboard.press("Tab");
   await expect(list.locator(":focus")).toHaveCount(0);
 });
+
+async function openOnPhone(page: Page) {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/");
+  await ready(page);
+  await page.getByRole("option", { name: ISSUES.ofz }).click();
+  await expect(page.getByRole("button", { name: "Back to the list" })).toBeFocused();
+}
+
+test("on a phone the browser's Back returns from an issue to the list", async ({ page }) => {
+  await openOnPhone(page);
+  expect(new URL(page.url()).searchParams.get("issue")).toBe(ISSUES.ofz);
+  await page.goBack();
+  await expect(page.locator(".pane-list")).toBeVisible();
+  expect(new URL(page.url()).searchParams.get("issue")).toBeNull();
+  await expect(page.getByRole("option", { name: ISSUES.ofz })).toBeFocused();
+  // Forward opens it again.
+  await page.goForward();
+  await expect(page.locator(".issue-card")).toBeVisible();
+});
+
+test("on a phone the page's own Back button goes back in the history too", async ({ page }) => {
+  await openOnPhone(page);
+  await page.getByRole("button", { name: "Back to the list" }).click();
+  await expect(page.getByRole("option", { name: ISSUES.ofz })).toBeFocused();
+  expect(new URL(page.url()).searchParams.get("issue")).toBeNull();
+  // It went back rather than adding an entry: Forward opens the issue
+  // again, and Back from the list leaves the page.
+  await page.goForward();
+  await expect(page.locator(".issue-card")).toBeVisible();
+  await page.goBack();
+  await page.goBack();
+  expect(page.url()).toBe("about:blank");
+});
+
+test("on a phone the search shortcut goes back to the list and into the search", async ({ page }) => {
+  await openOnPhone(page);
+  await page.keyboard.press("/");
+  await expect(page.getByLabel("Search by issuer or ticker")).toBeFocused();
+  expect(new URL(page.url()).searchParams.get("issue")).toBeNull();
+});

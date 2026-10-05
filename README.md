@@ -104,7 +104,8 @@ What the tests cover, and nothing wider:
 - Keyboard paths: `/` to the search, Tab to the issue list (one tab
   stop), the arrow keys through it and Enter to open an issue, the horizon and key-rate sliders by arrow and page keys, the
   reinvestment switch by Space, `?` for the shortcuts dialog, Escape to
-  close it; on a phone, Back returns focus to the issue's row. The
+  close it; on a phone, the page's Back button and the browser's Back
+  both return to the list, with focus on the issue's row. The
   scroll keys scroll the page with nothing focused.
 - No sideways page scroll at 1280 px and at 375 px, in each language.
 - The header stays in place while the page scrolls under it, and the

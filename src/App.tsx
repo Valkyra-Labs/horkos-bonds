@@ -38,13 +38,22 @@ const readIssue = (): string | null => {
   return id !== null && BONDS.some((b) => b.id === id) ? id : null;
 };
 
-/** Keeps the open issue in ?issue=, so a reload or a link opens it. */
-function writeIssue(id: string | null) {
+/** The history entry's mark for an issue opened over the list on a narrow
+ * screen. */
+const PUSHED = "horkosIssue";
+
+/** Keeps the open issue in ?issue=, so a reload or a link opens it. With
+ * `push`, as a new history entry, so the browser's Back returns to the
+ * list. */
+function writeIssue(id: string | null, push = false) {
   const url = new URL(location.href);
   if (id === null) url.searchParams.delete("issue");
   else url.searchParams.set("issue", id);
-  history.replaceState(history.state, "", url);
+  if (push) history.pushState({ ...history.state, [PUSHED]: id }, "", url);
+  else history.replaceState(history.state, "", url);
 }
+
+const pushedIssue = (): unknown => (history.state as Record<string, unknown> | null)?.[PUSHED];
 
 /** Focuses an issue's row in the list. The record list draws its rows a
  * frame or two after it mounts, so this waits for the row, for a few
@@ -113,15 +122,27 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
     [engine, selected, plan?.amount, plan?.horizonDay, plan?.reinvest, plan?.taxRegime, plan?.otherIncome, plan?.rateShiftPct],
   );
 
+  // On a narrow screen the issue replaces the list like a page, so opening
+  // it adds a history entry and the browser's Back (or Android's) returns
+  // to the list; the page's own Back button goes back the same way.
   const open = (id: string) => {
     returnTo.current = id;
     setSelectedId(id);
-    writeIssue(id);
+    writeIssue(id, !wide && pushedIssue() === undefined);
   };
   const close = () => {
+    if (pushedIssue() !== undefined) {
+      history.back();
+      return;
+    }
     setSelectedId(null);
     writeIssue(null);
   };
+  useEffect(() => {
+    const follow = () => setSelectedId(readIssue());
+    addEventListener("popstate", follow);
+    return () => removeEventListener("popstate", follow);
+  }, []);
 
   // On a narrow screen the issue replaces the list: focus goes to the
   // Back button when it opens, and back to the issue's row when it closes.
@@ -140,8 +161,19 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
       description: t.scSearch,
       group: t.scGeneral,
       onTrigger: () => {
-        if (!wide && selectedId !== null) close();
-        setTimeout(() => search.current?.querySelector("input")?.focus(), 0);
+        if (!wide && selectedId !== null) {
+          // The focus goes to the search, not back to the issue's row.
+          returnTo.current = null;
+          close();
+        }
+        // After Back the list comes back with the history's next event, so
+        // wait for the field for a few frames.
+        const focusSearch = (frames: number) => {
+          const input = search.current?.querySelector("input");
+          if (input) input.focus();
+          else if (frames > 0) requestAnimationFrame(() => focusSearch(frames - 1));
+        };
+        requestAnimationFrame(() => focusSearch(10));
       },
     },
     { key: "?", description: t.scHelp, group: t.scGeneral, onTrigger: () => setHelpOpen(true) },
