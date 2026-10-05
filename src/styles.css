@@ -14,19 +14,15 @@
 @import "@valkyra-labs/stoa-react/styles.css";
 
 :root {
-  color-scheme: light dark;
   font-family: var(--stoa-font-family-sans);
   font-size: var(--stoa-font-size-md);
   background: var(--stoa-color-bg);
   color: var(--stoa-color-text);
 }
-:root[data-theme="light"] { color-scheme: light; }
-:root[data-theme="dark"] { color-scheme: dark; }
 body { margin: 0; }
 strong { font-weight: var(--stoa-font-weight-semibold); }
 
 .muted { margin: 0; color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-sm); }
-.ticker { font-family: var(--stoa-font-family-mono); }
 
 .app { display: grid; gap: var(--stoa-space-4); }
 

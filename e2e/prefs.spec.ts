@@ -130,3 +130,14 @@ test("an amount typed in Latin digits is read in the Arabic interface", async ({
   await expect(amount).toHaveValue("٢٥٠٬٠٠٠");
   await expect(page.getByTestId("calc-error")).toHaveCount(0);
 });
+
+test("native controls and scrollbars are drawn in the chosen theme", async ({ page }) => {
+  const scheme = () => page.locator("html").evaluate((el) => getComputedStyle(el).colorScheme);
+  await page.goto("/?theme=dark");
+  await expect.poll(scheme).toBe("dark");
+  await page.goto("/?theme=light");
+  await expect.poll(scheme).toBe("light");
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto("/?theme=system");
+  await expect.poll(scheme).toBe("dark");
+});

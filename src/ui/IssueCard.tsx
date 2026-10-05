@@ -94,7 +94,7 @@ export function IssueCard({ t, f, bond, derived: d, engine, name }: IssueCardPro
   return (
     <Panel title={name} className="issue-card">
       <p className="issue-card__id">
-        <bdi className="ticker">{bond.id}</bdi>
+        <Ltr mono>{bond.id}</Ltr>
       </p>
       <div className="tags">
         {/* The rating reads left to right in every language: "BBB-", not "-BBB" in Arabic. */}
