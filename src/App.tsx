@@ -25,7 +25,7 @@ import type { Plan } from "./engine/types";
 import { LANGS, LOCALES, THEME_STORE, strings, type Lang } from "./i18n";
 import { EMPTY_QUERY, applyQuery, sortItems, type Item, type Query, type SortKey } from "./lib/filters";
 import { formats } from "./lib/format";
-import { issuerName } from "./lib/names";
+import { issuerName, searchTexts } from "./lib/names";
 import { timed } from "./lib/timing";
 import { Calculator, defaultPlan, type PlanInput } from "./ui/Calculator";
 import { Diagnostics } from "./ui/Diagnostics";
@@ -93,6 +93,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
   }, [t]);
 
   const nameOf = (bond: Bond) => issuerName(bond, t);
+  const textsOf = (bond: Bond) => searchTexts(bond, t);
 
   // Every issue derived by the active engine; derived again when the
   // engine changes.
@@ -108,7 +109,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
     if (items && performance.getEntriesByName("horkos:list-ready").length === 0) performance.mark("horkos:list-ready");
   }, [items]);
 
-  const visible = useMemo(() => (items ? sortItems(applyQuery(items, query, nameOf), sort) : []), [items, query, sort, t]);
+  const visible = useMemo(() => (items ? sortItems(applyQuery(items, query, textsOf), sort) : []), [items, query, sort, t]);
   const selected = items?.find((i) => i.bond.id === selectedId) ?? null;
   const plan = selected ? (plans[selected.bond.id] ?? defaultPlan(selected.derived)) : null;
   const enginePlan: Plan | null = plan;
@@ -195,6 +196,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
       selectedId={selectedId}
       onOpen={open}
       nameOf={nameOf}
+      textsOf={textsOf}
       searchRef={search}
     />
   );

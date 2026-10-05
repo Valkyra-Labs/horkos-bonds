@@ -32,7 +32,8 @@ Status: early. Performance record, with stamps:
 - **The list**: sixty generated issues (ten federal loan bonds, OFZ, and
   fifty corporate issues; fixed coupons, floaters on the key rate,
   amortising issues and issues with an offer). Search by issuer or
-  ticker; filter chips in groups (issuer, coupon, maturity, features),
+  ticker, word by word, with or without the ticker's hyphen, and for OFZ
+  by the name in the interface's language ("ОФЗ 26217" in Russian); filter chips in groups (issuer, coupon, maturity, features),
   each with the count it would leave; sort by yield, maturity or rating.
   A search with no match says so and offers to clear the filters.
 - **The issue**: clean and dirty price, accrued interest, yields to

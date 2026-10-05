@@ -127,3 +127,14 @@ for (const [lang, width] of [
     expect(await overflowing(sheet)).toEqual([]);
   });
 }
+
+test("in Russian, OFZ is found by its Russian name and number", async ({ page }) => {
+  await page.goto("/?lang=ru");
+  await ready(page);
+  const search = page.getByLabel("Поиск по эмитенту или тикеру");
+  for (const query of ["ОФЗ 26217", "ОФЗ-26217", "офз26217"]) {
+    await search.fill(query);
+    await expect(page.getByRole("listbox").getByRole("option"), query).toHaveCount(1);
+    await expect(page.getByRole("option", { name: ISSUES.ofz }), query).toBeVisible();
+  }
+});

@@ -5,7 +5,7 @@ import type { RefObject } from "react";
 import { Button, EmptyState, FilterChipGroup, Ltr, RecordList, Select, TextField, type RecordListItem } from "@valkyra-labs/stoa-react";
 import type { Bond } from "../data/issues";
 import type { Strings } from "../i18n";
-import { GROUPS, chipCounts, type ChipId, type GroupId, type Item, type Query, type SortKey } from "../lib/filters";
+import { GROUPS, chipCounts, type ChipId, type GroupId, type Item, type Query, type SearchTexts, type SortKey } from "../lib/filters";
 import type { Formats } from "../lib/format";
 
 const CHIP_LABEL: Record<ChipId, keyof Strings> = {
@@ -38,11 +38,13 @@ export type IssueListProps = {
   selectedId: string | null;
   onOpen: (id: string) => void;
   nameOf: (bond: Bond) => string;
+  /** What the search looks in besides the ticker. */
+  textsOf: SearchTexts;
   searchRef: RefObject<HTMLDivElement | null>;
 };
 
-export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, selectedId, onOpen, nameOf, searchRef }: IssueListProps) {
-  const counts = chipCounts(all, query, nameOf);
+export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, selectedId, onOpen, nameOf, textsOf, searchRef }: IssueListProps) {
+  const counts = chipCounts(all, query, textsOf);
   // The ticker names the record (typing it jumps there); the issuer, the
   // rating, the coupon and the maturity describe it; the yield is its value.
   const records: RecordListItem[] = visible.map(({ bond, derived }) => ({
