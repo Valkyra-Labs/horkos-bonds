@@ -259,9 +259,13 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
         {loading ? (
           <div className="workspace" aria-busy="true">
             <Panel title={t.issues} className="pane-list">
-              <Skeleton label={t.loadingEngine}>
-                <SkeletonLines count={8} />
-              </Skeleton>
+              {/* As tall as the list will be, so what follows the
+                  workspace does not move when the list arrives. */}
+              <div className="pane-list__placeholder">
+                <Skeleton label={t.loadingEngine}>
+                  <SkeletonLines count={8} />
+                </Skeleton>
+              </div>
             </Panel>
             {wide && (
               <div className="detail" aria-hidden="true">

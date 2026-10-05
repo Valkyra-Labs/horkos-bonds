@@ -63,3 +63,29 @@ for (const theme of ["light", "dark"] as const) {
     }
   });
 }
+
+for (const [width, height] of [
+  [1280, 900],
+  [375, 812],
+] as const) {
+  test(`the list's placeholder keeps the page below it in place while the engine loads (${width} px)`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    let release = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route("**/*.wasm", async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto("/?lang=ar");
+    await expect(page.locator(".app")).toHaveAttribute("data-state", "loading");
+    const top = () => page.locator(".glossary").evaluate((el) => el.getBoundingClientRect().top);
+    const loading = await top();
+    release();
+    await ready(page);
+    const loaded = await top();
+    // On a wide screen the Terms stay where they were; on a phone they start
+    // below the fold, where a move is not seen.
+    if (width >= 1024) expect(loaded).toBe(loading);
+    else expect(Math.min(loading, loaded)).toBeGreaterThanOrEqual(height);
+  });
+}
