@@ -110,7 +110,7 @@ test("every engine error code has a sentence in each language", async ({ page })
   ] as const) {
     await page.goto(`/?lang=${lang}&issue=${ISSUES.ofz}`);
     await ready(page);
-    const amount = page.locator(".calculator .stoa-number input");
+    const amount = page.locator(".calculator .stoa-number input").first();
     await amount.fill("0");
     await amount.press("Enter");
     await expect(page.getByTestId("calc-error").getByRole("alert")).toContainText(text);
@@ -120,7 +120,7 @@ test("every engine error code has a sentence in each language", async ({ page })
 test("an amount typed in Latin digits is read in the Arabic interface", async ({ page }) => {
   await page.goto(`/?lang=ar&issue=${ISSUES.ofz}`);
   await ready(page);
-  const amount = page.locator(".calculator .stoa-number input");
+  const amount = page.locator(".calculator .stoa-number input").first();
   await amount.fill("500");
   await amount.press("Enter");
   await expect(amount).toHaveValue("٥٠٠");

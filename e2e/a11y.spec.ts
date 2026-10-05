@@ -44,7 +44,7 @@ for (const lang of LANGS) {
       await expectNoSeriousViolations(page, "empty list", { lang, theme });
 
       // An engine error in the calculator.
-      const amount = page.locator(".calculator .stoa-number input");
+      const amount = page.locator(".calculator .stoa-number input").first();
       await amount.fill("0");
       await amount.press("Enter");
       await expect(page.getByTestId("calc-error")).toBeVisible();

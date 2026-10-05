@@ -29,6 +29,7 @@ export const ERROR_CODES: readonly ErrorCode[] = [
   "amount_not_positive",
   "amount_too_large",
   "horizon_out_of_range",
+  "invalid_other_income",
   "invalid_price",
   "amount_below_one_bond",
 ];

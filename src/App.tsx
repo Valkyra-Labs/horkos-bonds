@@ -19,7 +19,7 @@ import {
   useThemePreference,
 } from "@valkyra-labs/stoa-react";
 import { BONDS, type Bond } from "./data/issues";
-import { KEY_RATE_PCT, MARKET, TAX_RATE_PCT } from "./data/market";
+import { IIS_B_LAST_OPEN_DAY, KEY_RATE_PCT, MARKET } from "./data/market";
 import { activeEngine, useEngineChoice, useEngines } from "./engine/useEngines";
 import type { Plan } from "./engine/types";
 import { LANGS, LOCALES, THEME_STORE, strings, type Lang } from "./i18n";
@@ -46,7 +46,7 @@ function writeIssue(id: string | null) {
   history.replaceState(history.state, "", url);
 }
 
-const TERM_KEYS = ["keyRate", "ofz", "accrued", "ytm", "offer", "amortisation", "duration", "ldv", "iis", "rating"] as const;
+const TERM_KEYS = ["keyRate", "ofz", "accrued", "ytm", "simpleYield", "offer", "amortisation", "duration", "ldv", "iis", "rating"] as const;
 
 /** The screen. Rendered inside an I18nProvider set to the language's
  * locale, which Stoa's words and digits follow. */
@@ -93,7 +93,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
   const visible = useMemo(() => (items ? sortItems(applyQuery(items, query, nameOf), sort) : []), [items, query, sort, t]);
   const selected = items?.find((i) => i.bond.id === selectedId) ?? null;
   const plan = selected ? (plans[selected.bond.id] ?? defaultPlan(selected.derived)) : null;
-  const enginePlan: Plan | null = plan ? { ...plan, taxRatePct: TAX_RATE_PCT } : null;
+  const enginePlan: Plan | null = plan;
 
   // The figures on screen, with the time each call took on the active
   // engine, for the diagnostics.
@@ -101,7 +101,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
   const calc = useMemo(
     () => (engine && selected && enginePlan ? timed(() => engine.calculate(selected.bond.issue, MARKET, enginePlan)) : null),
     // The plan object is rebuilt on every render; its fields are what matter.
-    [engine, selected, plan?.amount, plan?.horizonDay, plan?.reinvest, plan?.taxRegime, plan?.rateShiftPct],
+    [engine, selected, plan?.amount, plan?.horizonDay, plan?.reinvest, plan?.taxRegime, plan?.otherIncome, plan?.rateShiftPct],
   );
 
   const open = (id: string) => {
@@ -163,6 +163,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
           t={t}
           f={f}
           derived={selected.derived}
+          floater={selected.bond.issue.couponType === "floater"}
           plan={plan}
           onPlan={(p) => setPlans((all) => ({ ...all, [selected.bond.id]: p }))}
           result={calc[0]}
@@ -250,12 +251,15 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
 
         <Disclosure summary={t.glossary} className="glossary">
           <dl className="glossary__list">
-            {TERM_KEYS.map((k) => (
-              <div key={k} className="glossary__item">
-                <dt>{t.terms[k][0]}</dt>
-                <dd>{t.terms[k][1]}</dd>
-              </div>
-            ))}
+            {TERM_KEYS.map((k) => {
+              const [term, text] = t.terms[k];
+              return (
+                <div key={k} className="glossary__item">
+                  <dt>{term}</dt>
+                  <dd>{typeof text === "function" ? text(f.date(IIS_B_LAST_OPEN_DAY)) : text}</dd>
+                </div>
+              );
+            })}
           </dl>
         </Disclosure>
       </div>

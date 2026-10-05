@@ -80,8 +80,8 @@ test("the calculator breaks the total into signed lines and compares the offer",
   await expect(breakdown.getByRole("row", { name: /Coupons/ })).toContainText("+₽");
   await expect(breakdown.getByRole("row", { name: /^Tax/ })).toContainText("-₽");
   await expect(breakdown.getByRole("row", { name: /Broker's commission/ })).toContainText("-₽");
-  await expect(breakdown.getByRole("row", { name: /^Total/ })).toContainText("₽117,594.51");
-  await expect(page.getByTestId("offer").getByRole("row", { name: /Sell back on May 22, 2028/ })).toContainText("17.18%");
+  await expect(breakdown.getByRole("row", { name: /^Total/ })).toContainText("₽117,754.96");
+  await expect(page.getByTestId("offer").getByRole("row", { name: /Sell back on May 22, 2028/ })).toContainText("17.45%");
 
   await page.getByLabel("Amount, ₽").fill("250000");
   await page.getByLabel("Amount, ₽").press("Enter");
@@ -93,7 +93,7 @@ test("the calculator breaks the total into signed lines and compares the offer",
   await expect(page.getByTestId("early-exit")).toContainText("The plan holds to maturity");
   await expect(breakdown.getByRole("row", { name: /Redemption at maturity/ })).toBeVisible();
 
-  // Long-term relief and IIS type B lower the tax line to nothing for IIS.
+  // IIS type B: no tax.
   await page.getByRole("radio", { name: "IIS type B" }).click();
   await expect(breakdown.getByRole("row", { name: /^Tax/ })).toContainText("₽0.00");
   // The regime's explanation is the group's description, read with it.
@@ -154,7 +154,7 @@ test("keyboard: search, open an issue and change the plan", async ({ page }) => 
   await page.keyboard.press("PageUp");
   await expect(total).not.toHaveText(before ?? "");
 
-  const reinvest = page.getByRole("switch", { name: /Reinvest coupons/ });
+  const reinvest = page.getByRole("switch", { name: /Reinvest payments/ });
   await reinvest.focus();
   await page.keyboard.press("Space");
   await expect(reinvest).not.toBeChecked();

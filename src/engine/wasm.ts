@@ -37,7 +37,7 @@ function planOf(x: Plan): glue.Plan {
   p.horizonDay = x.horizonDay;
   p.reinvest = x.reinvest;
   p.taxRegime = x.taxRegime;
-  p.taxRatePct = x.taxRatePct;
+  p.otherIncome = x.otherIncome;
   p.rateShiftPct = x.rateShiftPct;
   return p;
 }
@@ -62,7 +62,8 @@ function breakdown(b: glue.Breakdown): Breakdown {
     commission: b.commission,
     total: b.total,
     profit: b.profit,
-    annualPct: b.annualPct,
+    periodPct: b.periodPct,
+    annualPct: b.annualPct ?? null,
     horizonDay: b.horizonDay,
   };
   b.free();
@@ -108,7 +109,7 @@ function calculation(c: glue.Calculation): Calculation {
       applicable: e.applicable,
       result: breakdown(e.result),
       diff: e.diff,
-      modDurationAtHorizon: e.modDurationAtHorizon,
+      modDurationAtHorizon: e.modDurationAtHorizon ?? null,
     },
     floater:
       f === undefined

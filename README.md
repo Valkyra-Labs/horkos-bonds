@@ -36,22 +36,32 @@ Status: early. Performance record, with stamps:
   each with the count it would leave; sort by yield, maturity or rating.
   A search with no match says so and offers to clear the filters.
 - **The issue**: clean and dirty price, accrued interest, yields to
-  maturity and to the offer, simple yield, Macaulay and modified
-  duration; the payment schedule as an event strip (coupons,
-  amortisation, offer, maturity) and as a table per bond; for a fixed
-  coupon, the dirty price against the yield.
+  maturity and to the offer, the simple yield over the term, Macaulay
+  and modified duration; the payment schedule as an event strip
+  (coupons, amortisation, offer, maturity) and as a table per bond; for
+  a fixed coupon, the dirty price against the yield.
 - **The calculator**: amount, holding horizon (with presets for one year,
-  the offer and maturity), coupon reinvestment, tax regime (standard 13
-  percent, the long-term holding relief, an individual investment
-  account of type B) and a key-rate change. The result is the total at
-  the horizon as a signed breakdown (income positive, tax and commission
-  negative), the profit and the effective annual return; the sale before
-  maturity under the key-rate change; for a floater, the key rate down
-  2, unchanged and up 2 points, with the coupons under each; for an issue
-  with an offer, selling back at the offer against holding on at a low
-  coupon. Every input recalculates at once. An error the engine returns
-  (an amount of zero, one that does not buy a bond, one over the limit)
-  is a sentence with a way back to valid inputs.
+  the offer and maturity), reinvestment of coupons and of principal
+  repaid early, the account (an ordinary brokerage account or an
+  individual investment account of type B, which only accounts opened by
+  the end of 2023 can be), the holder's other investment income for the
+  15 percent rate above 2.4 million roubles a year, and a key-rate
+  change. In a brokerage account tax is counted per calendar year, with
+  a loss and the accrued interest paid netted against coupons, and the
+  long-term holding relief on a gain held more than three years; the
+  calculator says which rules apply at the chosen horizon and which
+  revision of the Tax Code they follow. The result is the total at the
+  horizon as a signed breakdown (income positive, tax and commission
+  negative), the profit and the effective annual return, or the return
+  over the period for a horizon under a month; the sale before maturity
+  under the key-rate change (a fixed coupon's price moves by its
+  duration, a floater's coupons follow the key rate and its price
+  barely moves); for a floater, the key rate down 2, unchanged and up 2
+  points, with the coupons under each; for an issue with an offer,
+  selling back at the offer against holding on at a low coupon. Every
+  input recalculates at once. An error the engine returns (an amount of
+  zero, one that does not buy a bond, one over the limit) is a sentence
+  with a way back to valid inputs.
 - **Terms**: local terms keep their names (OFZ, key rate, LDV, IIS type
   B, offer); the inputs that use them say what they mean, and a Terms
   section explains each in a line.
