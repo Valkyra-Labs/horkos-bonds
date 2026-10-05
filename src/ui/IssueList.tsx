@@ -79,18 +79,14 @@ export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, se
         <TextField label={t.search} value={query.search} onChange={(search) => onQuery({ ...query, search })} />
       </div>
       {GROUPS.map((group) => (
-        <div key={group.id} className="chip-row">
-          <span className="chip-row__label" aria-hidden="true">
-            {t[GROUP_LABEL[group.id]] as string}
-          </span>
-          <FilterChipGroup<ChipId>
-            label={t[GROUP_LABEL[group.id]] as string}
-            size="small"
-            chips={group.chips.map((id) => ({ id, label: t[CHIP_LABEL[id]] as string, count: counts[id] }))}
-            value={query.chips.filter((c) => group.chips.includes(c))}
-            onChange={(on) => onQuery({ ...query, chips: [...query.chips.filter((c) => !group.chips.includes(c)), ...on] })}
-          />
-        </div>
+        <FilterChipGroup<ChipId>
+          key={group.id}
+          label={t[GROUP_LABEL[group.id]] as string}
+          size="small"
+          chips={group.chips.map((id) => ({ id, label: t[CHIP_LABEL[id]] as string, count: counts[id] }))}
+          value={query.chips.filter((c) => group.chips.includes(c))}
+          onChange={(on) => onQuery({ ...query, chips: [...query.chips.filter((c) => !group.chips.includes(c)), ...on] })}
+        />
       ))}
       <div className="issue-list__bar">
         <p className="muted" role="status">
@@ -122,7 +118,7 @@ export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, se
       ) : (
         <Table<Item>
           caption={t.listCaption}
-          captionHidden
+          hideCaption
           columns={columns}
           rows={[...visible]}
           rowKey={(i) => i.bond.id}

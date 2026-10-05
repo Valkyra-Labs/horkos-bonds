@@ -96,7 +96,8 @@ test("the calculator breaks the total into signed lines and compares the offer",
   // Long-term relief and IIS type B lower the tax line to nothing for IIS.
   await page.getByRole("radio", { name: "IIS type B" }).click();
   await expect(breakdown.getByRole("row", { name: /^Tax/ })).toContainText("₽0.00");
-  await expect(page.locator(".calc-tax .field-note")).toContainText("Individual investment account (IIS) of type B");
+  // The regime's explanation is the group's description, read with it.
+  await expect(page.getByRole("radiogroup", { name: "Tax regime" })).toHaveAccessibleDescription(/Individual investment account \(IIS\) of type B/);
 });
 
 test("a floater shows three key-rate scenarios with a coupon chart", async ({ page }) => {

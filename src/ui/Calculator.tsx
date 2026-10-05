@@ -78,26 +78,17 @@ export function Calculator({ t, f, derived: d, plan, onPlan, result }: Calculato
         <Switch isSelected={plan.reinvest} onChange={(reinvest) => set({ reinvest })} description={t.reinvestDesc(f.percent(d.ytmMaturity))}>
           {t.reinvest}
         </Switch>
-        <div className="calc-tax">
-          {/* ChoiceGroup names itself for assistive technology only; the
-              same words are drawn above it. */}
-          <span className="field-label" aria-hidden="true">
-            {t.tax}
-          </span>
-          <ChoiceGroup<TaxRegime>
-            label={t.tax}
-            value={plan.taxRegime}
-            onChange={(taxRegime) => set({ taxRegime })}
-            choices={[
-              { id: "standard", label: t.taxStandard },
-              { id: "ldv", label: t.taxLdv },
-              { id: "iis_b", label: t.taxIis },
-            ]}
-          />
-          <p className="field-note">
-            {taxDesc}
-          </p>
-        </div>
+        <ChoiceGroup<TaxRegime>
+          label={t.tax}
+          description={taxDesc}
+          value={plan.taxRegime}
+          onChange={(taxRegime) => set({ taxRegime })}
+          choices={[
+            { id: "standard", label: t.taxStandard },
+            { id: "ldv", label: t.taxLdv },
+            { id: "iis_b", label: t.taxIis },
+          ]}
+        />
         <Slider
           label={t.shift}
           value={plan.rateShiftPct}
