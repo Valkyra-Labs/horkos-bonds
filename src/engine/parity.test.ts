@@ -7,7 +7,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { BONDS } from "../data/issues";
-import { MARKET, TAX_RATE_PCT } from "../data/market";
+import { MARKET } from "../data/market";
 import { twinEngine } from "./twin";
 import { loadWasm } from "./wasm";
 import type { Plan, TaxRegime } from "./types";
@@ -46,17 +46,19 @@ describe("WebAssembly and twin through the app's adapters", () => {
   });
 
   it("calculate the same plans, and the same errors, for every issue", () => {
-    const regimes: TaxRegime[] = ["standard", "ldv", "iis_b"];
+    const regimes: TaxRegime[] = ["standard", "iis_b"];
     for (const b of BONDS) {
       const d = twinEngine.derive_bond(b.issue, MARKET);
       if (!("ok" in d)) throw new Error(b.id);
       const maturity = d.ok.maturityDay;
       const plans: Plan[] = [
-        { amount: 100_000, horizonDay: Math.min(365, maturity), reinvest: true, taxRegime: "standard", taxRatePct: TAX_RATE_PCT, rateShiftPct: 2 },
-        { amount: 1_000_000, horizonDay: maturity, reinvest: false, taxRegime: regimes[b.id.length % 3]!, taxRatePct: TAX_RATE_PCT, rateShiftPct: -1.5 },
-        { amount: 0, horizonDay: 10, reinvest: true, taxRegime: "ldv", taxRatePct: TAX_RATE_PCT, rateShiftPct: 0 },
-        { amount: 500, horizonDay: 10, reinvest: true, taxRegime: "iis_b", taxRatePct: TAX_RATE_PCT, rateShiftPct: 0 },
-        { amount: 2e9, horizonDay: 10, reinvest: true, taxRegime: "standard", taxRatePct: TAX_RATE_PCT, rateShiftPct: 0 },
+        { amount: 100_000, horizonDay: Math.min(365, maturity), reinvest: true, taxRegime: "standard", otherIncome: 0, rateShiftPct: 2 },
+        { amount: 1_000_000, horizonDay: maturity, reinvest: false, taxRegime: regimes[b.id.length % 2]!, otherIncome: 2_000_000, rateShiftPct: -1.5 },
+        { amount: 50_000, horizonDay: Math.min(10, maturity), reinvest: true, taxRegime: "standard", otherIncome: 0, rateShiftPct: 1 },
+        { amount: 0, horizonDay: 10, reinvest: true, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 },
+        { amount: 500, horizonDay: 10, reinvest: true, taxRegime: "iis_b", otherIncome: 0, rateShiftPct: 0 },
+        { amount: 2e9, horizonDay: 10, reinvest: true, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 },
+        { amount: 100_000, horizonDay: Math.min(365, maturity), reinvest: true, taxRegime: "standard", otherIncome: -1, rateShiftPct: 0 },
       ];
       for (const [n, plan] of plans.entries()) close(wasm.calculate(b.issue, MARKET, plan), twinEngine.calculate(b.issue, MARKET, plan), `${b.id} plan ${n}`);
     }

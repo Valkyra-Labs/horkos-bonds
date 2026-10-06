@@ -32,26 +32,37 @@ Status: early. Performance record, with stamps:
 - **The list**: sixty generated issues (ten federal loan bonds, OFZ, and
   fifty corporate issues; fixed coupons, floaters on the key rate,
   amortising issues and issues with an offer). Search by issuer or
-  ticker; filter chips in groups (issuer, coupon, maturity, features),
+  ticker, word by word, with or without the ticker's hyphen, and for OFZ
+  by the name in the interface's language ("ОФЗ 26217" in Russian); filter chips in groups (issuer, coupon, maturity, features),
   each with the count it would leave; sort by yield, maturity or rating.
   A search with no match says so and offers to clear the filters.
 - **The issue**: clean and dirty price, accrued interest, yields to
-  maturity and to the offer, simple yield, Macaulay and modified
-  duration; the payment schedule as an event strip (coupons,
-  amortisation, offer, maturity) and as a table per bond; for a fixed
-  coupon, the dirty price against the yield.
+  maturity and to the offer, the simple yield over the term, Macaulay
+  and modified duration; the payment schedule as an event strip
+  (coupons, amortisation, offer, maturity) and as a table per bond; for
+  a fixed coupon, the dirty price against the yield.
 - **The calculator**: amount, holding horizon (with presets for one year,
-  the offer and maturity), coupon reinvestment, tax regime (standard 13
-  percent, the long-term holding relief, an individual investment
-  account of type B) and a key-rate change. The result is the total at
-  the horizon as a signed breakdown (income positive, tax and commission
-  negative), the profit and the effective annual return; the sale before
-  maturity under the key-rate change; for a floater, the key rate down
-  2, unchanged and up 2 points, with the coupons under each; for an issue
-  with an offer, selling back at the offer against holding on at a low
-  coupon. Every input recalculates at once. An error the engine returns
-  (an amount of zero, one that does not buy a bond, one over the limit)
-  is a sentence with a way back to valid inputs.
+  the offer and maturity), reinvestment of coupons and of principal
+  repaid early, the account (an ordinary brokerage account or an
+  individual investment account of type B, which only accounts opened by
+  the end of 2023 can be), the holder's other investment income for the
+  15 percent rate above 2.4 million roubles a year, and a key-rate
+  change. In a brokerage account tax is counted per calendar year, with
+  a loss and the accrued interest paid netted against coupons, and the
+  long-term holding relief on a gain held more than three years; the
+  calculator says which rules apply at the chosen horizon and which
+  revision of the Tax Code they follow. The result is the total at the
+  horizon as a signed breakdown (income positive, tax and commission
+  negative), the profit and the effective annual return, or the return
+  over the period for a horizon under a month; the sale before maturity
+  under the key-rate change (a fixed coupon's price moves by its
+  duration, a floater's coupons follow the key rate and its price
+  barely moves); for a floater, the key rate down 2, unchanged and up 2
+  points, with the coupons under each; for an issue with an offer,
+  selling back at the offer against holding on at a low coupon. Every
+  input recalculates at once. An error the engine returns (an amount of
+  zero, one that does not buy a bond, one over the limit) is a sentence
+  with a way back to valid inputs.
 - **Terms**: local terms keep their names (OFZ, key rate, LDV, IIS type
   B, offer); the inputs that use them say what they mean, and a Terms
   section explains each in a line.
@@ -91,10 +102,11 @@ What the tests cover, and nothing wider:
   empty list, a calculation error, the diagnostics sheet with timings,
   the loading state and the WebAssembly fallback, at 1440 px; and the
   list and an issue at 375 px.
-- Keyboard paths: `/` to the search, Tab to an issue and Enter to open
-  it, the horizon and key-rate sliders by arrow and page keys, the
+- Keyboard paths: `/` to the search, Tab to the issue list (one tab
+  stop), the arrow keys through it and Enter to open an issue, the horizon and key-rate sliders by arrow and page keys, the
   reinvestment switch by Space, `?` for the shortcuts dialog, Escape to
-  close it; on a phone, Back returns focus to the issue's row. The
+  close it; on a phone, the page's Back button and the browser's Back
+  both return to the list, with focus on the issue's row. The
   scroll keys scroll the page with nothing focused.
 - No sideways page scroll at 1280 px and at 375 px, in each language.
 - The header stays in place while the page scrolls under it, and the

@@ -19,13 +19,13 @@ import {
   useThemePreference,
 } from "@valkyra-labs/stoa-react";
 import { BONDS, type Bond } from "./data/issues";
-import { KEY_RATE_PCT, MARKET, TAX_RATE_PCT } from "./data/market";
+import { IIS_B_LAST_OPEN_DAY, KEY_RATE_PCT, MARKET } from "./data/market";
 import { activeEngine, useEngineChoice, useEngines } from "./engine/useEngines";
 import type { Plan } from "./engine/types";
 import { LANGS, LOCALES, THEME_STORE, strings, type Lang } from "./i18n";
 import { EMPTY_QUERY, applyQuery, sortItems, type Item, type Query, type SortKey } from "./lib/filters";
 import { formats } from "./lib/format";
-import { issuerName } from "./lib/names";
+import { issuerName, searchTexts } from "./lib/names";
 import { timed } from "./lib/timing";
 import { Calculator, defaultPlan, type PlanInput } from "./ui/Calculator";
 import { Diagnostics } from "./ui/Diagnostics";
@@ -38,15 +38,33 @@ const readIssue = (): string | null => {
   return id !== null && BONDS.some((b) => b.id === id) ? id : null;
 };
 
-/** Keeps the open issue in ?issue=, so a reload or a link opens it. */
-function writeIssue(id: string | null) {
+/** The history entry's mark for an issue opened over the list on a narrow
+ * screen. */
+const PUSHED = "horkosIssue";
+
+/** Keeps the open issue in ?issue=, so a reload or a link opens it. With
+ * `push`, as a new history entry, so the browser's Back returns to the
+ * list. */
+function writeIssue(id: string | null, push = false) {
   const url = new URL(location.href);
   if (id === null) url.searchParams.delete("issue");
   else url.searchParams.set("issue", id);
-  history.replaceState(history.state, "", url);
+  if (push) history.pushState({ ...history.state, [PUSHED]: id }, "", url);
+  else history.replaceState(history.state, "", url);
 }
 
-const TERM_KEYS = ["keyRate", "ofz", "accrued", "ytm", "offer", "amortisation", "duration", "ldv", "iis", "rating"] as const;
+const pushedIssue = (): unknown => (history.state as Record<string, unknown> | null)?.[PUSHED];
+
+/** Focuses an issue's row in the list. The record list draws its rows a
+ * frame or two after it mounts, so this waits for the row, for a few
+ * frames at most. */
+function focusRecord(id: string, frames = 10) {
+  const row = document.querySelector<HTMLElement>(`.pane-list [role="option"][data-key="${CSS.escape(id)}"]`);
+  if (row) row.focus();
+  else if (frames > 0) requestAnimationFrame(() => focusRecord(id, frames - 1));
+}
+
+const TERM_KEYS = ["keyRate", "ofz", "accrued", "ytm", "simpleYield", "offer", "amortisation", "duration", "ldv", "iis", "rating"] as const;
 
 /** The screen. Rendered inside an I18nProvider set to the language's
  * locale, which Stoa's words and digits follow. */
@@ -75,6 +93,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
   }, [t]);
 
   const nameOf = (bond: Bond) => issuerName(bond, t);
+  const textsOf = (bond: Bond) => searchTexts(bond, t);
 
   // Every issue derived by the active engine; derived again when the
   // engine changes.
@@ -90,10 +109,10 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
     if (items && performance.getEntriesByName("horkos:list-ready").length === 0) performance.mark("horkos:list-ready");
   }, [items]);
 
-  const visible = useMemo(() => (items ? sortItems(applyQuery(items, query, nameOf), sort) : []), [items, query, sort, t]);
+  const visible = useMemo(() => (items ? sortItems(applyQuery(items, query, textsOf), sort) : []), [items, query, sort, t]);
   const selected = items?.find((i) => i.bond.id === selectedId) ?? null;
   const plan = selected ? (plans[selected.bond.id] ?? defaultPlan(selected.derived)) : null;
-  const enginePlan: Plan | null = plan ? { ...plan, taxRatePct: TAX_RATE_PCT } : null;
+  const enginePlan: Plan | null = plan;
 
   // The figures on screen, with the time each call took on the active
   // engine, for the diagnostics.
@@ -101,25 +120,40 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
   const calc = useMemo(
     () => (engine && selected && enginePlan ? timed(() => engine.calculate(selected.bond.issue, MARKET, enginePlan)) : null),
     // The plan object is rebuilt on every render; its fields are what matter.
-    [engine, selected, plan?.amount, plan?.horizonDay, plan?.reinvest, plan?.taxRegime, plan?.rateShiftPct],
+    [engine, selected, plan?.amount, plan?.horizonDay, plan?.reinvest, plan?.taxRegime, plan?.otherIncome, plan?.rateShiftPct],
   );
 
+  // On a narrow screen the issue replaces the list like a page, so opening
+  // it adds a history entry and the browser's Back (or Android's) returns
+  // to the list; the page's own Back button goes back the same way.
   const open = (id: string) => {
     returnTo.current = id;
     setSelectedId(id);
-    writeIssue(id);
+    writeIssue(id, !wide && pushedIssue() === undefined);
   };
   const close = () => {
+    if (pushedIssue() !== undefined) {
+      history.back();
+      return;
+    }
     setSelectedId(null);
     writeIssue(null);
   };
+  useEffect(() => {
+    const follow = () => setSelectedId(readIssue());
+    addEventListener("popstate", follow);
+    return () => removeEventListener("popstate", follow);
+  }, []);
 
   // On a narrow screen the issue replaces the list: focus goes to the
   // Back button when it opens, and back to the issue's row when it closes.
   useEffect(() => {
     if (wide) return;
-    if (selectedId !== null) back.current?.querySelector("button")?.focus();
-    else if (returnTo.current) document.querySelector<HTMLElement>(`[data-issue="${returnTo.current}"]`)?.focus();
+    // A frame later: the list picks a row on pointer down, and the
+    // browser's own focus on that press would otherwise land after this
+    // one, on the page, since the row is gone.
+    if (selectedId !== null) requestAnimationFrame(() => back.current?.querySelector("button")?.focus());
+    else if (returnTo.current) focusRecord(returnTo.current);
   }, [selectedId, wide]);
 
   const help = useShortcuts([
@@ -128,8 +162,19 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
       description: t.scSearch,
       group: t.scGeneral,
       onTrigger: () => {
-        if (!wide && selectedId !== null) close();
-        setTimeout(() => search.current?.querySelector("input")?.focus(), 0);
+        if (!wide && selectedId !== null) {
+          // The focus goes to the search, not back to the issue's row.
+          returnTo.current = null;
+          close();
+        }
+        // After Back the list comes back with the history's next event, so
+        // wait for the field for a few frames.
+        const focusSearch = (frames: number) => {
+          const input = search.current?.querySelector("input");
+          if (input) input.focus();
+          else if (frames > 0) requestAnimationFrame(() => focusSearch(frames - 1));
+        };
+        requestAnimationFrame(() => focusSearch(10));
       },
     },
     { key: "?", description: t.scHelp, group: t.scGeneral, onTrigger: () => setHelpOpen(true) },
@@ -151,6 +196,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
       selectedId={selectedId}
       onOpen={open}
       nameOf={nameOf}
+      textsOf={textsOf}
       searchRef={search}
     />
   );
@@ -163,6 +209,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
           t={t}
           f={f}
           derived={selected.derived}
+          floater={selected.bond.issue.couponType === "floater"}
           plan={plan}
           onPlan={(p) => setPlans((all) => ({ ...all, [selected.bond.id]: p }))}
           result={calc[0]}
@@ -212,9 +259,13 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
         {loading ? (
           <div className="workspace" aria-busy="true">
             <Panel title={t.issues} className="pane-list">
-              <Skeleton label={t.loadingEngine}>
-                <SkeletonLines count={8} />
-              </Skeleton>
+              {/* As tall as the list will be, so what follows the
+                  workspace does not move when the list arrives. */}
+              <div className="pane-list__placeholder">
+                <Skeleton label={t.loadingEngine}>
+                  <SkeletonLines count={8} />
+                </Skeleton>
+              </div>
             </Panel>
             {wide && (
               <div className="detail" aria-hidden="true">
@@ -250,12 +301,15 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
 
         <Disclosure summary={t.glossary} className="glossary">
           <dl className="glossary__list">
-            {TERM_KEYS.map((k) => (
-              <div key={k} className="glossary__item">
-                <dt>{t.terms[k][0]}</dt>
-                <dd>{t.terms[k][1]}</dd>
-              </div>
-            ))}
+            {TERM_KEYS.map((k) => {
+              const [term, text] = t.terms[k];
+              return (
+                <div key={k} className="glossary__item">
+                  <dt>{term}</dt>
+                  <dd>{typeof text === "function" ? text(f.date(IIS_B_LAST_OPEN_DAY)) : text}</dd>
+                </div>
+              );
+            })}
           </dl>
         </Disclosure>
       </div>

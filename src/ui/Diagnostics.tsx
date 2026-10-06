@@ -2,7 +2,7 @@
 // how long the WebAssembly took to load, the last call on the active
 // engine, and a timing of both engines on the issue and plan on screen.
 import { useState } from "react";
-import { Button, Callout, ChoiceGroup, Sheet, StatBar, Table } from "@valkyra-labs/stoa-react";
+import { Button, Callout, ChoiceGroup, Ltr, Sheet, StatBar, Table } from "@valkyra-labs/stoa-react";
 import type { Engines } from "../engine/useEngines";
 import { twinEngine } from "../engine/twin";
 import type { EngineKind, Issue, Market, Plan } from "../engine/types";
@@ -92,8 +92,18 @@ export function Diagnostics({ t, f, isOpen, onOpenChange, engines, choice, onCho
         <Table<Row>
           caption={t.timingCaption(f.integer(SAMPLES), f.integer(BATCH), f.integer(PERCENTILE))}
           columns={[
-            { id: "engine", header: t.colEngine },
-            { id: "fn", header: t.colFunction, cell: (r) => <code dir="ltr">{r.fn}</code> },
+            // The engine and the function share the first column, one over
+            // the other, so the table fits the sheet's width.
+            {
+              id: "engine",
+              header: t.colCall,
+              cell: (r) => (
+                <span className="timing-call">
+                  <span>{r.engine}</span>
+                  <Ltr mono>{r.fn}</Ltr>
+                </span>
+              ),
+            },
             { id: "median", header: t.colMedian, numeric: true, cell: (r) => ms(r.median) },
             { id: "p95", header: t.colP95(f.integer(PERCENTILE)), numeric: true, cell: (r) => ms(r.p95) },
           ]}

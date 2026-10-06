@@ -37,10 +37,15 @@ const MATCH: Record<ChipId, (item: Item) => boolean> = {
 export type Query = {
   /** The chips that are on. */
   chips: readonly ChipId[];
-  /** Text to look for in the issuer's name (in the interface's language)
-   * and the ticker. */
+  /** Words to look for in the ticker and in the issue's search texts (the
+   * issuer's name in the interface's language): each word must be found,
+   * and a ticker matches with or without its separators ("okad 01",
+   * "okad01", "OKAD-01"). */
   search: string;
 };
+
+/** The texts a search looks in besides the ticker. */
+export type SearchTexts = (bond: Bond) => string[];
 
 export const EMPTY_QUERY: Query = { chips: [], search: "" };
 
@@ -48,6 +53,18 @@ export const EMPTY_QUERY: Query = { chips: [], search: "" };
  * forgiving about case and accents. */
 function fold(text: string): string {
   return text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase().replace(/ё/g, "е");
+}
+
+/** Without spaces and separators, so "okad01" finds "OKAD-01". */
+const compact = (text: string) => text.replace(/[\s\-_.,·]+/g, "");
+
+function matchesSearch(item: Item, words: readonly string[], textsOf: SearchTexts): boolean {
+  if (words.length === 0) return true;
+  const texts = [item.bond.id, ...textsOf(item.bond)].map(fold);
+  const joined = texts.map(compact);
+  const whole = compact(words.join(""));
+  if (joined.some((t) => t.includes(whole))) return true;
+  return words.every((w) => texts.some((t) => t.includes(w)) || joined.some((t) => t.includes(compact(w))));
 }
 
 function matchesGroups(item: Item, chips: readonly ChipId[]): boolean {
@@ -58,21 +75,19 @@ function matchesGroups(item: Item, chips: readonly ChipId[]): boolean {
   });
 }
 
-export function applyQuery(items: readonly Item[], query: Query, nameOf: (bond: Bond) => string): Item[] {
-  const needle = fold(query.search.trim());
-  return items.filter(
-    (item) => matchesGroups(item, query.chips) && (needle === "" || fold(nameOf(item.bond)).includes(needle) || fold(item.bond.id).includes(needle)),
-  );
+export function applyQuery(items: readonly Item[], query: Query, textsOf: SearchTexts): Item[] {
+  const words = fold(query.search).split(/\s+/).filter((w) => w !== "");
+  return items.filter((item) => matchesGroups(item, query.chips) && matchesSearch(item, words, textsOf));
 }
 
 /** How many items each chip would leave in the list. */
-export function chipCounts(items: readonly Item[], query: Query, nameOf: (bond: Bond) => string): Record<ChipId, number> {
+export function chipCounts(items: readonly Item[], query: Query, textsOf: SearchTexts): Record<ChipId, number> {
   const counts = {} as Record<ChipId, number>;
   for (const group of GROUPS) {
     for (const chip of group.chips) {
       const others = query.chips.filter((c) => !group.chips.includes(c));
       const own = group.mode === "any" ? [chip] : [...new Set([...query.chips.filter((c) => group.chips.includes(c)), chip])];
-      counts[chip] = applyQuery(items, { chips: [...others, ...own], search: query.search }, nameOf).length;
+      counts[chip] = applyQuery(items, { chips: [...others, ...own], search: query.search }, textsOf).length;
     }
   }
   return counts;

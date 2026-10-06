@@ -1,12 +1,13 @@
 // One issue: what it is, its derived figures, its payment schedule as an
 // event strip and a table, and for a fixed coupon how its price depends on
 // the yield.
-import { EventStrip, LineChart, Metric, Panel, StatBar, Table, Tag, type StripEvent, type TableColumn, type TagTone } from "@valkyra-labs/stoa-react";
+import { EventStrip, LineChart, Ltr, Metric, Panel, StatBar, Table, Tag, type StripEvent, type TableColumn, type TagTone } from "@valkyra-labs/stoa-react";
 import { ratingIndex, type Bond } from "../data/issues";
 import { dayToMs } from "../data/market";
 import type { Derived, Engine } from "../engine/types";
 import type { Strings } from "../i18n";
 import type { Formats } from "../lib/format";
+import { NARROW, useMediaQuery } from "./useMediaQuery";
 
 export type IssueCardProps = {
   t: Strings;
@@ -30,6 +31,7 @@ function ratingTone(bond: Bond): TagTone {
 export function IssueCard({ t, f, bond, derived: d, engine, name }: IssueCardProps) {
   const { issue } = bond;
   const floater = issue.couponType === "floater";
+  const narrow = useMediaQuery(NARROW);
   const rows: Row[] = d.flows.days.map((day, i) => ({
     day,
     coupon: d.flows.coupons[i] ?? 0,
@@ -50,25 +52,39 @@ export function IssueCard({ t, f, bond, derived: d, engine, name }: IssueCardPro
     else if (r.principal > 0) out.push({ key: "a", label: t.evAmortisation, tone: "info" });
     return out;
   };
-  const columns: TableColumn<Row>[] = [
-    { id: "date", header: t.colDate, cell: (r) => f.date(r.day) },
-    { id: "coupon", header: t.colCoupon, numeric: true, cell: (r) => f.money(r.coupon) },
-    { id: "principal", header: t.colPrincipal, numeric: true, cell: (r) => (r.principal > 0 ? f.money(r.principal) : "") },
-    { id: "total", header: t.colTotal, numeric: true, cell: (r) => f.money(r.coupon + r.principal) },
-    {
-      id: "event",
-      header: t.colEvent,
-      cell: (r) => (
-        <span className="tags">
-          {eventsOf(r).map((e) => (
-            <Tag key={e.key} tone={e.tone} size="small">
-              {e.label}
-            </Tag>
-          ))}
-        </span>
-      ),
-    },
-  ];
+  const tags = (r: Row) => (
+    <span className="tags">
+      {eventsOf(r).map((e) => (
+        <Tag key={e.key} tone={e.tone} size="small">
+          {e.label}
+        </Tag>
+      ))}
+    </span>
+  );
+  // On a phone five columns do not fit: the events go under the date and
+  // the total, the sum of the two amounts beside it, is left out.
+  const columns: TableColumn<Row>[] = narrow
+    ? [
+        {
+          id: "date",
+          header: t.colDate,
+          cell: (r) => (
+            <span className="event-cell">
+              {f.date(r.day)}
+              {tags(r)}
+            </span>
+          ),
+        },
+        { id: "coupon", header: t.colCoupon, numeric: true, cell: (r) => f.money(r.coupon) },
+        { id: "principal", header: t.colPrincipal, numeric: true, cell: (r) => (r.principal > 0 ? f.money(r.principal) : "") },
+      ]
+    : [
+        { id: "date", header: t.colDate, cell: (r) => f.date(r.day) },
+        { id: "coupon", header: t.colCoupon, numeric: true, cell: (r) => f.money(r.coupon) },
+        { id: "principal", header: t.colPrincipal, numeric: true, cell: (r) => (r.principal > 0 ? f.money(r.principal) : "") },
+        { id: "total", header: t.colTotal, numeric: true, cell: (r) => f.money(r.coupon + r.principal) },
+        { id: "event", header: t.colEvent, cell: tags },
+      ];
 
   const amounts = rows.map((r) => r.coupon + r.principal);
   const curve = floater
@@ -78,10 +94,13 @@ export function IssueCard({ t, f, bond, derived: d, engine, name }: IssueCardPro
   return (
     <Panel title={name} className="issue-card">
       <p className="issue-card__id">
-        <bdi className="ticker">{bond.id}</bdi>
+        <Ltr mono>{bond.id}</Ltr>
       </p>
       <div className="tags">
-        <Tag tone={ratingTone(bond)}>{t.ratingLabel(bond.rating)}</Tag>
+        {/* The rating reads left to right in every language: "BBB-", not "-BBB" in Arabic. */}
+        <Tag tone={ratingTone(bond)}>
+          {t.rating} <Ltr>{bond.rating}</Ltr>
+        </Tag>
         <Tag>{bond.issuer.kind === "ofz" ? t.tagOfz : t.tagCorporate}</Tag>
         <Tag tone={floater ? "info" : "neutral"}>{floater ? t.tagFloater(f.percent(issue.spreadPct / 100)) : t.tagFixed}</Tag>
         {issue.amortization.length > 0 && <Tag tone="info">{t.tagAmortising}</Tag>}

@@ -2,14 +2,16 @@ import { describe, expect, it } from "vitest";
 import { BONDS } from "../data/issues";
 import { MARKET } from "../data/market";
 import { twinEngine } from "../engine/twin";
+import { strings } from "../i18n";
 import { applyQuery, chipCounts, EMPTY_QUERY, sortItems, type Item } from "./filters";
+import { searchTexts } from "./names";
 
 const items: Item[] = BONDS.map((bond) => {
   const r = twinEngine.derive_bond(bond.issue, MARKET);
   if (!("ok" in r)) throw new Error(bond.id);
   return { bond, derived: r.ok };
 });
-const name = (b: Item["bond"]) => (b.issuer.kind === "ofz" ? "Federal loan" : `${b.issuer.place} ${b.issuer.industry}`);
+const name = (b: Item["bond"]) => [b.issuer.kind === "ofz" ? "Federal loan" : `${b.issuer.place} ${b.issuer.industry}`];
 
 describe("filters", () => {
   it("no query keeps every issue", () => {
@@ -43,6 +45,17 @@ describe("filters", () => {
     expect(applyQuery(items, { chips: [], search: "ofz-292" }, name).map((i) => i.bond.id)).toEqual(["OFZ-29252", "OFZ-29259", "OFZ-29266"]);
     expect(applyQuery(items, { chips: [], search: "VOLGA" }, name).length).toBeGreaterThan(0);
     expect(applyQuery(items, { chips: [], search: "no such issuer" }, name)).toHaveLength(0);
+  });
+
+  it("search reads a ticker with or without its separators, and OFZ in Russian", () => {
+    const ru = (b: Item["bond"]) => searchTexts(b, strings.ru);
+    const ids = (search: string, texts = ru) => applyQuery(items, { chips: [], search }, texts).map((i) => i.bond.id);
+    for (const search of ["ОФЗ 26217", "ОФЗ-26217", "офз26217", "OFZ-26217", "ofz 26217"]) expect(ids(search), search).toEqual(["OFZ-26217"]);
+    for (const search of ["okad 01", "okad01", "OKAD-01"]) expect(ids(search), search).toEqual(["OKAD-01"]);
+    expect(ids("ОФЗ 99999")).toEqual([]);
+    // Every word must match: an issuer's name and a ticker's number.
+    expect(ids("Ока 01").every((id) => id.startsWith("OKA"))).toBe(true);
+    expect(ids("Ока 01").length).toBeGreaterThan(0);
   });
 
   it("sorts by yield, maturity and rating", () => {

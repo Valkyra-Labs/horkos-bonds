@@ -30,7 +30,9 @@ async function setPlan(page: Page) {
   const amount = page.getByLabel("Amount, ₽");
   await amount.fill("345678");
   await amount.press("Enter");
-  await page.getByRole("radio", { name: "Long-term relief" }).click();
+  const other = page.getByLabel("Other investment income per year, ₽");
+  await other.fill("2390000");
+  await other.press("Enter");
   const shift = page.getByRole("slider", { name: "Key rate change by the horizon" });
   await shift.focus();
   await page.keyboard.press("ArrowLeft");
